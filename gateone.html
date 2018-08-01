@@ -108,8 +108,6 @@
     }
 
     bindEvent(window, 'message', function (e) {
-      GateOne.Terminal.sendString(e.data + "\n");
-      return;
       switch (e.data.type) {
         case 'cmd':
           GateOne.Terminal.sendString(e.data.content + "\n");
