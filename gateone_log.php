@@ -8,6 +8,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     return;
 }
 
+/**
+ * "callerId": "string", // potato id
+ * "callerType": 0, 
+ * "targetId": "string", // server id
+ * "targetType": 2, 
+ * "belongId": "",
+ * "belongType": 1,
+ * "name": "string", // server name
+ * "taskId": "", // uuid 
+ * "X-Forwarded-For": "string", // 
+ * "ip": "string",
+ * "hostname": "string",
+ * "pid": 0,
+ * "level": 30,
+ * "msgCode": 611,
+ * "inputParams": {}, // what ever you have
+ * "outputParams": {},
+ * "msg": "string",
+ * "time": "string"
+ */
+
 $array = array(
     'id' => generateRandomString(7),
     'timestamp' => time(),
@@ -18,6 +39,18 @@ $array = array(
     'port' => $_GET['port'],
     'serverId' => $_GET['serverId'],
     'from' => $_SERVER['REMOTE_ADDR'],
+);
+
+$logObject = array(
+    'callerId' => $_GET['operatorId'], 
+    'callerType' => 0,
+    'targetId' => $_GET['serverId'],
+    'targetType' => 2,
+    'belongId' => '',
+    'belongType' => 1,
+    'name' => 'string',
+    'taskId' => generateRandomString(7),
+
 );
 
 $arrayString = json_encode($array).',';

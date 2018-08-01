@@ -37,7 +37,6 @@
         $('#loading-bar').hide();
         GateOne.Events.trigger("go:update_dimensions", GateOne.Visual.goDimensions)
         if (arg[0].match("Gate One server round-trip")) {
-          // connect()
         }
         for (let i = 0; i < line.length; i++) {
           if (document.getElementsByClassName('✈termline')[i].innerHTML.match('ssh:// URL')) {
@@ -179,7 +178,7 @@
     span.bold.✈f6 { color:#8fbcbb !important; } /* light cyan */
     span.bold.✈f7 { color:#eceff4 !important; } /* light white */
 
-    #go_default_controlsContainer  { display: none !important; }
+    #go_default_controlsContainer, #go_default_playbackControls  { display: none !important; }
   </style>
 </head>
 <body>
