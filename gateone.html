@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+  <title>Pentium WebSSH</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="/gateone.js"></script>
+  <script>
+    
+    GateOne.Base.superSandbox("GateOne.Terminal.Input", ["GateOne.Terminal", "GateOne.User", "GateOne.Input"], function(window, undefined) {
+      "use strict";
+      var params = urlParams();
+      var isInIframe = inIframe();
+      var line = document.getElementsByClassName('✈termline')
+      
+      GateOne.locations;
+      GateOne.Net.setLocation(params.location);
+
+      if (isInIframe) {
+        document.addEventListener('keyup', (e) => {
+          e.preventDefault() 
+          var eventObj = {
+            key: e.key,
+            keyCode: e.keyCode,
+            altKey: e.altKey,
+            ctrlKey: e.ctrlKey,
+            shiftKey: e.shiftKey
+          }
+
+          window.parent.postMessage(eventObj, '*');
+        });
+      }      
+
+      GateOne.Events.on("pentium-gateone-trigger", function (con, arg) {
+        $('#loading-bar').hide();
+        GateOne.Events.trigger("go:update_dimensions", GateOne.Visual.goDimensions)
+        if (arg[0].match("Gate One server round-trip")) {
+          // connect()
+        }
+        for (let i = 0; i < line.length; i++) {
+          if (document.getElementsByClassName('✈termline')[i].innerHTML.match('ssh:// URL')) {
+            document.getElementsByClassName('✈termline')[i].innerHTML = '';
+          }  
+        }
+      });
+    })
+
+    window.onload = function () {
+      var params = urlParams();
+      var isInIframe = inIframe();
+      var titleExist = 'title' in params;
+      var titleFix = ' - Pentium WebSSH';
+      var isSuperUser = params.isSuperUser === 'true';
+      window.sshUrl = decodeURIComponent(params.ssh);
+      console.log(sshUrl)
+      window.localStorage[params.location] = params.ssh
+
+      var initObj = {
+          url: 'https://term.pentium.network',
+          embedded: true,
+          showToolbar: false,
+          autoConnectURL: params.ssh,
+          style: {'background-color': 'black'}
+        }
+      
+      localStorage[params.location] = decodeURIComponent(params.ssh)
+
+      if (titleExist) {
+        document.title = titleExist ? params.title.concat(titleFix) : decodeURIComponent(params.ssh).split('@')[1].concat(titleFix);  
+      }  
+
+      if (isSuperUser && !isInIframe) {
+        initObj.embedded = false;
+        initObj.showToolbar = true;
+      }
+
+      if (params.ssh) {
+        GateOne.init(initObj);
+      }
+    }
+
+    function urlParams() {
+      try {
+        var search = location.search.substring(1);
+        var params = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}');
+  
+        return params;
+      } catch (error) {
+        return {};
+      }        
+    }
+
+    function bindEvent(element, eventName, eventHandler) {
+      if (element.addEventListener) {
+        element.addEventListener(eventName, eventHandler, false);
+      } else if (element.attachEvent) {
+        element.attachEvent('on' + eventName, eventHandler);
+      }
+    }
+
+    function inIframe() {
+      try {
+        return window.self !== window.top;
+      } catch (e) {
+        return true;
+      }
+    }
+
+    bindEvent(window, 'message', function (e) {
+      GateOne.Terminal.sendString(e.data + "\n");
+      return;
+      switch (e.data.type) {
+        case 'cmd':
+          GateOne.Terminal.sendString(e.data.content + "\n");
+          break;
+        case 'focus':
+          $('.✈terminal_pre').click()
+          break;
+        default:
+          break;
+      }
+    });
+
+    /**
+     * Log
+     */
+    function log() {
+      $('#loading-bar').hide();
+    } 
+  </script>
+  <style>
+    #loading-bar {
+      color: white;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9999;
+    }
+    #loading-bar .bar{
+      position: absolute;
+      text-align: center;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .✈terminal_pre {
+      background-color: #2e3440 !important; /* background */
+      color: #d8dee9 !important;            /* foreground */
+    }
+
+    span.✈b0 { background-color:#3b4252 !important; }      /* black */
+    span.✈b1 { background-color:#bf616a !important; }      /* red */
+    span.✈b2 { background-color:#a3be8c !important; }      /* green */
+    span.✈b3 { background-color:#ebcb8b !important; }      /* yellow */
+    span.✈b4 { background-color:#81a1c1 !important; }      /* blue */
+    span.✈b5 { background-color:#b48ead !important; }      /* magenta */
+    span.✈b6 { background-color:#88c0d0 !important; }      /* cyan */
+    span.✈b7 { background-color:#e5e9f0 !important; }      /* white */
+
+    span.✈f0 { color:#3b4252 !important; }      /* black */
+    span.✈f1 { color:#bf616a !important; }      /* red */
+    span.✈f2 { color:#a3be8c !important; }      /* green */
+    span.✈f3 { color:#ebcb8b !important; }      /* yellow */
+    span.✈f4 { color:#81a1c1 !important; }      /* blue */
+    span.✈f5 { color:#b48ead !important; }      /* magenta */
+    span.✈f6 { color:#88c0d0 !important; }      /* cyan */
+    span.✈f7 { color:#e5e9f0 !important; }      /* white */
+
+    span.bold.✈f0 { color:#4c566a !important; } /* light black */
+    span.bold.✈f1 { color:#bf616a !important; } /* light red */
+    span.bold.✈f2 { color:#a3be8c !important; } /* light green */
+    span.bold.✈f3 { color:#ebcb8b !important; } /* light yellow */
+    span.bold.✈f4 { color:#81a1c1 !important; } /* light blue */
+    span.bold.✈f5 { color:#b48ead !important; } /* light magenta */
+    span.bold.✈f6 { color:#8fbcbb !important; } /* light cyan */
+    span.bold.✈f7 { color:#eceff4 !important; } /* light white */
+
+    #go_default_controlsContainer  { display: none !important; }
+  </style>
+</head>
+<body>
+<div id="loading-bar">
+  <div class="bar">
+    <span>读取中...</span><br>
+    <img src="loading-icon.svg" width="30">
+  </div>
+</div>
+<div id="gateone_container" style="position: fixed;top: 50%; left: 50%; width: 100%; height: 100%;transform: translate(-50%, -50%)">
+
+  <div id="gateone"></div>
+</div>
+</body>
+</html>
