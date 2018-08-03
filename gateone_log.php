@@ -40,7 +40,7 @@ $array = array(
     'serverId' => $_GET['serverId'],
     'from' => $_SERVER['REMOTE_ADDR'],
 );
-
+json_decode
 $logObject = array(
     'callerId' => $_GET['operatorId'], 
     'callerName' => $_GET['operatorName'],
@@ -49,9 +49,9 @@ $logObject = array(
     'targetType' => 2,
     'belongId' => '',
     'belongType' => 1,
-    'teamIds' => $_GET['teamIds'],
-    'userIds' => $_GET['userIds'],
-    'serverIds' => $_GET['serverIds'],
+    'teamIds' => json_decode($_GET['teamIds']),
+    'userIds' => json_decode($_GET['userIds']),
+    'serverIds' => json_decode($_GET['serverIds']),
     'name' => $array['serverId'],
     'taskId' => $array['id'],
     "X-Forwarded-For" => "", 
