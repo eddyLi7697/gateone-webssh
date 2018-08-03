@@ -59,7 +59,7 @@ $logObject = array(
     'inputParams' => $array,
     'outputParams' => array(),
     'msg' => 'Webssh access log',
-    'time' => $array['time']
+    'time' => $array['timestamp']
 );
 
 $arrayString = json_encode($array).',';
