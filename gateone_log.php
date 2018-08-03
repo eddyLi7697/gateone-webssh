@@ -40,7 +40,7 @@ $array = array(
     'serverId' => $_GET['serverId'],
     'from' => $_SERVER['REMOTE_ADDR'],
 );
-json_decode
+
 $logObject = array(
     'callerId' => $_GET['operatorId'], 
     'callerName' => $_GET['operatorName'],
