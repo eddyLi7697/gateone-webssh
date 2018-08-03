@@ -43,6 +43,7 @@ $array = array(
 
 $logObject = array(
     'callerId' => $_GET['operatorId'], 
+    'callerName' => $_GET['operatorName'],
     'callerType' => 0,
     'targetId' => $_GET['serverId'],
     'targetType' => 2,
