@@ -48,14 +48,23 @@ $logObject = array(
     'targetType' => 2,
     'belongId' => '',
     'belongType' => 1,
-    'name' => 'string',
-    'taskId' => generateRandomString(7),
-
+    'name' => $array['serverId'],
+    'taskId' => $array['id'],
+    "X-Forwarded-For" => "", 
+    'ip' => $array['from'],
+    'hostname' => $array['host'],
+    'pid' => 0,
+    'level' => 30,
+    'msgCode' => 611,
+    'inputParams' => $array,
+    'outputParams' => array(),
+    'msg' => 'Webssh access log',
+    'time' => $array['time']
 );
 
 $arrayString = json_encode($array).',';
 
-$myfile = file_put_contents('logs.txt', $arrayString, FILE_APPEND | LOCK_EX);
+$myfile = file_put_contents('logs_new.txt', $arrayString, FILE_APPEND | LOCK_EX);
 
 function generateRandomString($length = 10) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
