@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $array = array(
     'id' => generateRandomString(7),
-    'timestamp' => time(),
+    'timestamp' => round(microtime(true) * 1000),
     'operatorId' => $_GET['operatorId'],
     'operatorName' => $_GET['operatorName'],
     'user' => $_GET['user'],
@@ -60,7 +60,7 @@ $logObject = array(
     'msgCode' => 610,
     'inputParams' => $array,
     'msg' => 'webssh connection',
-    'time' => gmdate("Y-m-d\TH:i:s\Z", $array['timestamp']),
+    'time' => gmdate("Y-m-d\TH:i:s".".000\Z", time()),
     'timestamp' => $array['timestamp']
 );
 
