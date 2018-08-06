@@ -47,8 +47,6 @@ $logObject = array(
     'callerType' => 0,
     'targetId' => $_GET['serverId'],
     'targetType' => 2,
-    'belongId' => '',
-    'belongType' => 1,
     'teamIds' => json_decode($_GET['teamIds']),
     'userIds' => json_decode($_GET['userIds']),
     'serverIds' => json_decode($_GET['serverIds']),
@@ -61,9 +59,9 @@ $logObject = array(
     'level' => 30,
     'msgCode' => 610,
     'inputParams' => $array,
-    'outputParams' => array(),
-    'msg' => 'Webssh access log',
-    'time' => gmdate("Y-m-d\TH:i:s\Z", $array['timestamp'])
+    'msg' => 'webssh connection',
+    'time' => gmdate("Y-m-d\TH:i:s\Z", $array['timestamp']),
+    'timestamp' => $array['timestamp']
 );
 
 $arrayString = json_encode($array).',';
