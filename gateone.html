@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +7,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="/gateone.js"></script>
   <script>
+    var checkConnectDelay = 200;
     
     GateOne.Base.superSandbox("GateOne.Terminal.Input", ["GateOne.Terminal", "GateOne.User", "GateOne.Input"], function(window, undefined) {
       "use strict";
@@ -34,7 +34,8 @@
       }      
 
       GateOne.Events.on("pentium-gateone-trigger", function (con, arg) {
-        $('#loading-bar').hide();
+        
+        checkTerminalAlive();
         GateOne.Events.trigger("go:update_dimensions", GateOne.Visual.goDimensions)
         if (arg[0].match("Gate One server round-trip")) {
         }
@@ -121,11 +122,41 @@
     });
 
     /**
-     * Log
+     * 
      */
-    function log() {
-      $('#loading-bar').hide();
-    } 
+    function checkTerminalAlive() {
+      var checkConnectLoop = setInterval(checkConnect, checkConnectDelay);
+
+      GateOne.Terminal.sendString('testforconnect\n');
+
+      function checkConnect() {
+        var line = document.getElementsByClassName('✈termline')
+
+        console.log('checking')
+
+        for (let i = 0; i < line.length; i++) {
+          if (document.getElementsByClassName('✈termline')[i].innerHTML.match('-bash: testforconnect: command not found')) {
+            document.getElementsByClassName('✈termline')[i].innerHTML = '';
+            GateOne.Terminal.sendString('clear\n');
+            
+            setTimeout(() => {
+              stopCheckConnect();
+              $('#loading-bar').hide();
+              newTerm();
+            }, 500);
+          }
+        }
+      }
+
+      function stopCheckConnect() {
+        clearInterval(checkConnectLoop);
+      }
+    }
+
+    function newTerm() {
+      // console.log(123)
+      // GateOne.Terminal.newTerminal()
+    }
   </script>
   <style>
     #loading-bar {
@@ -136,6 +167,7 @@
       right: 0;
       bottom: 0;
       z-index: 9999;
+      background-color: #2e3440 !important;
     }
     #loading-bar .bar{
       position: absolute;

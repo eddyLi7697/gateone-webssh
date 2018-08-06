@@ -70,7 +70,7 @@ $arrayString = json_encode($array).',';
 $logObjectString = json_encode($logObject)."\r\n";
 
 $myfile = file_put_contents('logs_new.txt', $arrayString, FILE_APPEND | LOCK_EX);
-$myLog = file_put_contents('logs_access.txt', $logObjectString, FILE_APPEND | LOCK_EX);
+$myLog = file_put_contents('access.log', $logObjectString, FILE_APPEND | LOCK_EX);
 
 function generateRandomString($length = 10) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
