@@ -135,8 +135,7 @@
      * 
      */
     function checkTerminalAlive() {
-      var checkConnectLoop = setInterval(checkConnect, checkConnectDelay);
-      var params = urlParams();
+      var checkConnectLoop = setInterval(checkConnect, checkConnectDelay);      
 
       // GateOne.Terminal.sendString('testforconnect\n');
 
@@ -154,7 +153,7 @@
 
           GateOne.Terminal.closeTerminal(termNum)
           data.content = {
-            host: params.ssh,
+            host: sshUrl,
             status: 'FAILED'
           }
           console.log(data)
@@ -171,7 +170,7 @@
             GateOne.Terminal.sendString('clear\n');
             
             data.content = {
-              host: params.ssh,
+              host: sshUrl,
               status: 'SUCCESS'
             }
             window.parent.postMessage(data, '*');
