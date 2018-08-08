@@ -5,9 +5,11 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
   <title>Pentium WebSSH</title>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="/gateone.js"></script>
+  <script src="gateone.js"></script>
   <script>
-    var checkConnectDelay = 200;
+    var checkConnectDelay = 1000;
+    var reTry = 0;
+    var maxReTry = 30;
     
     GateOne.Base.superSandbox("GateOne.Terminal.Input", ["GateOne.Terminal", "GateOne.User", "GateOne.Input"], function(window, undefined) {
       "use strict";
@@ -29,7 +31,12 @@
             shiftKey: e.shiftKey
           }
 
-          window.parent.postMessage(eventObj, '*');
+          var data = {
+            type: 'EVENT',
+            content: eventObj
+          }
+
+          window.parent.postMessage(data, '*');
         });
       }      
 
@@ -46,7 +53,8 @@
         }
       });
     })
-
+    
+    
     window.onload = function () {
       var params = urlParams();
       var isInIframe = inIframe();
@@ -56,28 +64,31 @@
       window.sshUrl = decodeURIComponent(params.ssh);
       window.localStorage[params.location] = params.ssh
 
-      var initObj = {
-          url: 'https://term.pentium.network',
+      $.getJSON('config.json', result => {
+        var initObj = {
+          url: result.GATEONE,
           embedded: true,
           showToolbar: false,
           autoConnectURL: params.ssh,
           style: {'background-color': 'black'}
         }
       
-      localStorage[params.location] = decodeURIComponent(params.ssh)
+        localStorage[params.location] = decodeURIComponent(params.ssh)
 
-      if (titleExist) {
-        document.title = titleExist ? params.title.concat(titleFix) : decodeURIComponent(params.ssh).split('@')[1].concat(titleFix);  
-      }  
+        if (titleExist) {
+          document.title = titleExist ? params.title.concat(titleFix) : decodeURIComponent(params.ssh).split('@')[1].concat(titleFix);  
+        }  
 
-      if (isSuperUser && !isInIframe) {
-        initObj.embedded = false;
-        initObj.showToolbar = true;
-      }
+        if (isSuperUser && !isInIframe) {
+          initObj.embedded = false;
+          initObj.showToolbar = true;
+        }
 
-      if (params.ssh) {
-        GateOne.init(initObj);
-      }
+        if (params.ssh) {
+          GateOne.init(initObj);
+        }
+      })
+      
     }
 
     function urlParams() {
@@ -109,10 +120,10 @@
 
     bindEvent(window, 'message', function (e) {
       switch (e.data.type) {
-        case 'cmd':
+        case 'CMD':
           GateOne.Terminal.sendString(e.data.content + "\n");
           break;
-        case 'focus':
+        case 'FOCUS':
           $('.✈terminal_pre').click()
           break;
         default:
@@ -125,36 +136,69 @@
      */
     function checkTerminalAlive() {
       var checkConnectLoop = setInterval(checkConnect, checkConnectDelay);
+      var params = urlParams();
 
-      GateOne.Terminal.sendString('testforconnect\n');
+      // GateOne.Terminal.sendString('testforconnect\n');
 
       function checkConnect() {
         var line = document.getElementsByClassName('✈termline')
+        var data = {
+          type: 'STATUS'
+        }
 
-        console.log('checking')
+        GateOne.Terminal.sendString('testforconnect\n');
+
+        if (reTry >= maxReTry) {
+          var term = Object.keys(GateOne.Terminal.terminals)[0]
+          var termNum = typeof(term) !== 'number' ? parseInt(term) : 0
+
+          GateOne.Terminal.closeTerminal(termNum)
+          data.content = {
+            host: params.ssh,
+            status: 'FAILED'
+          }
+          console.log(data)
+          window.parent.postMessage(data, '*');
+          stopCheckConnect();
+          return
+        }
+
+        reTry += 1;
 
         for (let i = 0; i < line.length; i++) {
           if (document.getElementsByClassName('✈termline')[i].innerHTML.match('-bash: testforconnect: command not found')) {
             document.getElementsByClassName('✈termline')[i].innerHTML = '';
             GateOne.Terminal.sendString('clear\n');
             
+            data.content = {
+              host: params.ssh,
+              status: 'SUCCESS'
+            }
+            window.parent.postMessage(data, '*');
+            console.log(data)
+
             setTimeout(() => {
               stopCheckConnect();
-              $('#loading-bar').hide();
-              newTerm();
             }, 500);
           }
         }
       }
 
-      function stopCheckConnect() {
+      function stopCheckConnect() {        
         clearInterval(checkConnectLoop);
+        GateOne.Terminal.sendString('clear\n');
+
+        setTimeout(() => {
+          
+          $('#loading-bar').hide();
+          // newTerm();
+        }, 500);
       }
     }
 
     function newTerm() {
-      // console.log(123)
-      // GateOne.Terminal.newTerminal()
+      $('#loading-bar').show();
+      GateOne.Terminal.newTerminal()
     }
   </script>
   <style>
@@ -214,7 +258,7 @@
 <div id="loading-bar">
   <div class="bar">
     <span>读取中...</span><br>
-    <img src="loading-icon.svg" width="30">
+    <img src="loading-icon_pen.svg" width="100">
   </div>
 </div>
 <div id="gateone_container" style="position: fixed;top: 50%; left: 50%; width: 100%; height: 100%;transform: translate(-50%, -50%)">
