@@ -7,14 +7,15 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="gateone.js"></script>
   <script>
-    var checkConnectDelay = 1000;
+    var checkConnectDelay = 500;
     var reTry = 0;
-    var maxReTry = 30;
+    var maxReTry = 15;
+    var terminalFired = false
     
     GateOne.Base.superSandbox("GateOne.Terminal.Input", ["GateOne.Terminal", "GateOne.User", "GateOne.Input"], function(window, undefined) {
       "use strict";
-      var params = urlParams();
-      var isInIframe = inIframe();
+      var params = urlParams()
+      var isInIframe = inIframe()
       var line = document.getElementsByClassName('✈termline')
       
       GateOne.locations;
@@ -42,7 +43,11 @@
 
       GateOne.Events.on("pentium-gateone-trigger", function (con, arg) {
         
-        checkTerminalAlive();
+        if (!terminalFired) {
+          checkTerminalAlive()
+          terminalFired = true
+        }
+        
         GateOne.Events.trigger("go:update_dimensions", GateOne.Visual.goDimensions)
         if (arg[0].match("Gate One server round-trip")) {
         }
@@ -126,18 +131,22 @@
         case 'FOCUS':
           $('.✈terminal_pre').click()
           break;
+        case 'STATUS':
+          keyStatusHandle(e.data.content)
+          break;
         default:
           break;
       }
     });
 
     /**
-     * 
+     * Check terminal is alive
      */
     function checkTerminalAlive() {
-      var checkConnectLoop = setInterval(checkConnect, checkConnectDelay);      
+      var checkConnectLoop = setInterval(checkConnect, checkConnectDelay);   
 
       // GateOne.Terminal.sendString('testforconnect\n');
+      // GateOne.Terminal.newTerminal()
 
       function checkConnect() {
         var line = document.getElementsByClassName('✈termline')
@@ -150,22 +159,37 @@
         if (reTry >= maxReTry) {
           var term = Object.keys(GateOne.Terminal.terminals)[0]
           var termNum = typeof(term) !== 'number' ? parseInt(term) : 0
+          
+          for (let index = 0; index < 10; index++) {
+            GateOne.Terminal.closeTerminal(index)
+          }
 
-          GateOne.Terminal.closeTerminal(termNum)
+          try {
+            var createdTime = new Date(GateOne.Terminal.terminals[termNum].created).getTime()
+          } catch (error) {
+            var createdTime = new Date().getTime()
+          }
+          
           data.content = {
             host: sshUrl,
-            status: 'FAILED'
+            status: 'FAILED',
+            time: createdTime
           }
           console.log(data)
+          reTry = 0
+
+          stopCheckConnect('FAILED');
+          
+          console.log(GateOne.Terminal.terminals.count())
+
           window.parent.postMessage(data, '*');
-          stopCheckConnect();
           return
         }
 
         reTry += 1;
 
         for (let i = 0; i < line.length; i++) {
-          if (document.getElementsByClassName('✈termline')[i].innerHTML.match('-bash: testforconnect: command not found')) {
+          if (document.getElementsByClassName('✈termline')[i].innerHTML.match('-bash: testforconnect:')) {
             document.getElementsByClassName('✈termline')[i].innerHTML = '';
             GateOne.Terminal.sendString('clear\n');
             
@@ -177,27 +201,75 @@
             console.log(data)
 
             setTimeout(() => {
-              stopCheckConnect();
+              stopCheckConnect('SUCCESS');
             }, 500);
-          }
+          } else if (document.getElementsByClassName('✈termline')[i].innerHTML.match("s password:")) {
+            try {
+              var createdTime = new Date(GateOne.Terminal.terminals[termNum].created).getTime()
+            } catch (error) {
+              var createdTime = new Date().getTime()
+            }
+            
+            data.content = {
+              host: sshUrl,
+              status: 'FAILED',
+              time: createdTime
+            }
+
+            console.log(data)
+            window.parent.postMessage(data, '*');
+            setTimeout(() => {
+              stopCheckConnect('FAILED');
+            }, 500);
+          } //Permission denied, please try again.
         }
       }
 
-      function stopCheckConnect() {        
+      function stopCheckConnect(status) {        
         clearInterval(checkConnectLoop);
         GateOne.Terminal.sendString('clear\n');
 
-        setTimeout(() => {
+        if (status == 'SUCCESS') {
+          setTimeout(() => {          
+            $('#loading-bar').hide();
+          }, 500);
+        }
+      }
+    }
+
+    /**
+     * Handle key deployment status
+     */
+    function keyStatusHandle(status) {
+      switch (status) {
+        case 1:
+          document.getElementById('status-msg').innerText = '金钥部署中...'
+          break;
+        case 2:
+          document.getElementById('status-msg').innerText = '终端机启动中...'          
+          // newTerm()
+          break;
+        case 3:
           
-          $('#loading-bar').hide();
-          // newTerm();
-        }, 500);
+          break;
+        default:
+          break;
       }
     }
 
     function newTerm() {
       $('#loading-bar').show();
-      GateOne.Terminal.newTerminal()
+      
+      for (let index = 0; index < 10; index++) {
+        GateOne.Terminal.closeTerminal(index)
+      }
+      
+      setTimeout(() => {
+        reTry = 0
+        terminalFired = false
+        GateOne.Terminal.newTerminal()
+      }, 2000)
+      
     }
   </script>
   <style>
@@ -256,7 +328,7 @@
 <body>
 <div id="loading-bar">
   <div class="bar">
-    <span>读取中...</span><br>
+    <span id="status-msg">读取中...</span><br>
     <img src="loading-icon_pen.svg" width="100">
   </div>
 </div>
